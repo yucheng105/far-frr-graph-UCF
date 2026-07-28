@@ -7,7 +7,7 @@ INPUT_DIR = ROOT_DIR / "input-csvs"
 
 SCORE_COLUMN = "fake_score"
 LABEL_COLUMN = "label"
-THRESHOLDS = [index / 1000 for index in range(25, 501, 25)]
+THRESHOLDS = [index / 20 for index in range(1,21)]
 
 DATASET_FILES = [
     (
