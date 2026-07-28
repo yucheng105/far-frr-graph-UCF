@@ -89,62 +89,6 @@ def plot_single_chart(dataset_name, split_name, csv_path):
     save_current_figure(output_path)
 
 
-def plot_comparison_chart(dataset_name, filename, split_dirs):
-    split_data = {}
-
-    for split_dir in split_dirs:
-        csv_path = split_dir / filename
-        if not csv_path.exists():
-            raise FileNotFoundError(f"Input CSV not found: {csv_path}")
-
-        split_data[split_dir.name] = read_threshold_sweep(csv_path)
-
-    setup_axes(f"FAR / FRR Threshold Sweep - {dataset_name}")
-
-    colors = {
-        "FAR": ["#ff9896", "#d62728", "#8c1d18"],
-        "FRR": ["#aec7e8", "#1f77b4", "#174a7c"],
-    }
-
-    for index, (split_name, (thresholds, fars, frrs)) in enumerate(split_data.items()):
-        is_dense = index == len(split_data) - 1
-        linestyle = "-" if is_dense else "--"
-        marker = None if is_dense else "o"
-        markersize = 0 if is_dense else 3
-        linewidth = 2.2 if is_dense else 1.4
-        color_index = min(index, len(colors["FAR"]) - 1)
-
-        plt.plot(
-            thresholds,
-            fars,
-            label=f"FAR {split_name} splits",
-            linewidth=linewidth,
-            linestyle=linestyle,
-            marker=marker,
-            markersize=markersize,
-            color=colors["FAR"][color_index],
-        )
-        plt.plot(
-            thresholds,
-            frrs,
-            label=f"FRR {split_name} splits",
-            linewidth=linewidth,
-            linestyle=linestyle,
-            marker=marker,
-            markersize=markersize,
-            color=colors["FRR"][color_index],
-        )
-
-    plt.legend()
-
-    output_path = (
-        PLOTS_DIR
-        / "comparison"
-        / filename.replace(".csv", "_comparison.png")
-    )
-    save_current_figure(output_path)
-
-
 def main():
     split_dirs = get_split_dirs()
 
@@ -155,9 +99,6 @@ def main():
                 raise FileNotFoundError(f"Input CSV not found: {csv_path}")
 
             plot_single_chart(dataset_name, split_dir.name, csv_path)
-
-    for dataset_name, filename in DATASETS:
-        plot_comparison_chart(dataset_name, filename, split_dirs)
 
 
 if __name__ == "__main__":
