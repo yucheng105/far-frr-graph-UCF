@@ -2,7 +2,7 @@ from pathlib import Path
 import csv
 
 
-ROOT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = Path(__file__).resolve().parent.parent
 INPUT_DIR = ROOT_DIR / "input-csvs"
 OUTPUT_FILE = ROOT_DIR / "average_inference_time.csv"
 TIME_COLUMN = "inference_time_ms"
