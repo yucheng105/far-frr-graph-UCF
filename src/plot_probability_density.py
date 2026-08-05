@@ -10,10 +10,10 @@ PLOTS_DIR = RESULTS_DIR / "plots"
 
 SPLITS = ["20", "1000"]
 DATASETS = [
-    ("CelebDF", "threshold_sweep_ucf_celebdf.csv"),
-    ("DFDC", "threshold_sweep_ucf_dfdc.csv"),
-    ("FaceForensics", "threshold_sweep_ucf_faceforensics.csv"),
-    ("Combined", "threshold_sweep_ucf_combined.csv"),
+    ("CelebDF", "threshold_sweep_xception_celebdf.csv"),
+    ("DFDC", "threshold_sweep_xception_dfdc.csv"),
+    ("FaceForensics", "threshold_sweep_xception_faceforensics.csv"),
+    ("Combined", "threshold_sweep_xception_combined.csv"),
 ]
 
 
@@ -49,7 +49,7 @@ def setup_axes(title):
     plt.title(title)
     plt.xlabel("Threshold")
     plt.ylabel("Probability")
-    plt.xlim(0, 0.5)
+    plt.xlim(0, )
     plt.ylim(0, 1)
     plt.grid(True, linestyle="--", alpha=0.35)
 
