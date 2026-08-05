@@ -8,24 +8,13 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 RESULTS_DIR = ROOT_DIR / "results"
 PLOTS_DIR = RESULTS_DIR / "plots"
 
+SPLITS = ["20", "1000"]
 DATASETS = [
     ("CelebDF", "threshold_sweep_ucf_celebdf.csv"),
     ("DFDC", "threshold_sweep_ucf_dfdc.csv"),
     ("FaceForensics", "threshold_sweep_ucf_faceforensics.csv"),
     ("Combined", "threshold_sweep_ucf_combined.csv"),
 ]
-
-
-def get_split_dirs():
-    split_dirs = [
-        path for path in RESULTS_DIR.iterdir()
-        if path.is_dir() and path.name.isdigit()
-    ]
-
-    if not split_dirs:
-        raise FileNotFoundError(f"No numeric split directories found in {RESULTS_DIR}")
-
-    return sorted(split_dirs, key=lambda path: int(path.name))
 
 
 def read_threshold_sweep(csv_path):
@@ -60,7 +49,7 @@ def setup_axes(title):
     plt.title(title)
     plt.xlabel("Threshold")
     plt.ylabel("Probability")
-    plt.xlim(0, 1)
+    plt.xlim(0, 0.5)
     plt.ylim(0, 1)
     plt.grid(True, linestyle="--", alpha=0.35)
 
@@ -89,16 +78,76 @@ def plot_single_chart(dataset_name, split_name, csv_path):
     save_current_figure(output_path)
 
 
-def main():
-    split_dirs = get_split_dirs()
+def plot_comparison_chart(dataset_name, filename):
+    split_data = {}
 
-    for split_dir in split_dirs:
+    for split_name in SPLITS:
+        csv_path = RESULTS_DIR / split_name / filename
+        if not csv_path.exists():
+            raise FileNotFoundError(f"Input CSV not found: {csv_path}")
+
+        split_data[split_name] = read_threshold_sweep(csv_path)
+
+    setup_axes(f"FAR / FRR Threshold Sweep - {dataset_name}")
+
+    thresholds_20, fars_20, frrs_20 = split_data["20"]
+    thresholds_500, fars_500, frrs_500 = split_data["500"]
+
+    plt.plot(
+        thresholds_20,
+        fars_20,
+        label="FAR 20 splits",
+        linewidth=1.4,
+        linestyle="--",
+        marker="o",
+        markersize=3,
+        color="#ff9896",
+    )
+    plt.plot(
+        thresholds_20,
+        frrs_20,
+        label="FRR 20 splits",
+        linewidth=1.4,
+        linestyle="--",
+        marker="o",
+        markersize=3,
+        color="#aec7e8",
+    )
+    plt.plot(
+        thresholds_500,
+        fars_500,
+        label="FAR 500 splits",
+        linewidth=2.2,
+        color="#d62728",
+    )
+    plt.plot(
+        thresholds_500,
+        frrs_500,
+        label="FRR 500 splits",
+        linewidth=2.2,
+        color="#1f77b4",
+    )
+    plt.legend()
+
+    output_path = (
+        PLOTS_DIR
+        / "comparison"
+        / filename.replace(".csv", "_comparison.png")
+    )
+    save_current_figure(output_path)
+
+
+def main():
+    for split_name in SPLITS:
         for dataset_name, filename in DATASETS:
-            csv_path = split_dir / filename
+            csv_path = RESULTS_DIR / split_name / filename
             if not csv_path.exists():
                 raise FileNotFoundError(f"Input CSV not found: {csv_path}")
 
-            plot_single_chart(dataset_name, split_dir.name, csv_path)
+            plot_single_chart(dataset_name, split_name, csv_path)
+
+    for dataset_name, filename in DATASETS:
+        plot_comparison_chart(dataset_name, filename)
 
 
 if __name__ == "__main__":
