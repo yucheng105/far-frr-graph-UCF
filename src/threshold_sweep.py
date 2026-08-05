@@ -3,27 +3,27 @@ import csv
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-INPUT_DIR = ROOT_DIR / "input-csvs"
+INPUT_DIR = ROOT_DIR / "input-csvs" / "xception"
 
 SCORE_COLUMN = "fake_score"
 LABEL_COLUMN = "label"
-THRESHOLDS = [index / 20 for index in range(1,21)]
+THRESHOLDS = [index / 1000 for index in range(1,1001)]
 
 DATASET_FILES = [
     (
-        "ucf_celebdf",
-        INPUT_DIR / "scores_visual_ucf_celebdf_v0.csv",
-        ROOT_DIR / "threshold_sweep_ucf_celebdf.csv",
+        "xception_celebdf",
+        INPUT_DIR / "scores_visual_xception_ft_celebdf_v0.csv",
+        ROOT_DIR / "threshold_sweep_xception_celebdf.csv",
     ),
     (
-        "ucf_dfdc",
-        INPUT_DIR / "scores_visual_ucf_dfdc_v0.csv",
-        ROOT_DIR / "threshold_sweep_ucf_dfdc.csv",
+        "xception_dfdc",
+        INPUT_DIR / "scores_visual_xception_dfdc_v0.csv",
+        ROOT_DIR / "threshold_sweep_xception_dfdc.csv",
     ),
     (
-        "ucf_faceforensics",
-        INPUT_DIR / "scores_visual_ucf_v0.csv",
-        ROOT_DIR / "threshold_sweep_ucf_faceforensics.csv",
+        "xception_faceforensics",
+        INPUT_DIR / "scores_visual_xception_ft_v0.csv",
+        ROOT_DIR / "threshold_sweep_xception_faceforensics.csv",
     ),
 ]
 
@@ -125,7 +125,7 @@ def main():
         write_sweep_csv(output_path, build_sweep_rows(rows))
         print(f"Wrote {output_path}")
 
-    combined_output_path = ROOT_DIR / "threshold_sweep_ucf_combined.csv"
+    combined_output_path = ROOT_DIR / "threshold_sweep_xception_combined.csv"
     write_sweep_csv(combined_output_path, build_sweep_rows(combined_rows))
     print(f"Wrote {combined_output_path}")
 
