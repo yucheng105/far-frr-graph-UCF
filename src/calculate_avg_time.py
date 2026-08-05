@@ -3,14 +3,14 @@ import csv
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-INPUT_DIR = ROOT_DIR / "input-csvs"
-OUTPUT_FILE = ROOT_DIR / "average_inference_time.csv"
+INPUT_DIR = ROOT_DIR / "input-csvs" / "xception"
+OUTPUT_FILE = ROOT_DIR / "xception_average_inference_time.csv"
 TIME_COLUMN = "inference_time_ms"
 
 DATASET_FILES = [
-    ("CelebDF", INPUT_DIR / "scores_visual_ucf_celebdf_v0.csv"),
-    ("DFDC", INPUT_DIR / "scores_visual_ucf_dfdc_v0.csv"),
-    ("FaceForensics", INPUT_DIR / "scores_visual_ucf_v0.csv"),
+    ("CelebDF", INPUT_DIR / "scores_visual_xception_ft_celebdf_v0.csv"),
+    ("DFDC", INPUT_DIR / "scores_visual_xception_dfdc_v0.csv"),
+    ("FaceForensics", INPUT_DIR / "scores_visual_xception_ft_v0.csv"),
 ]
 
 

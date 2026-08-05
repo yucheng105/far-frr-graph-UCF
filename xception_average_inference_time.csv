@@ -1,0 +1,6 @@
+Dataset,Time(ms)
+CelebDF,158.79
+DFDC,106.22
+FaceForensics,114.7
+Combined(Micro),124.01
+Combined(Macro),111.82
