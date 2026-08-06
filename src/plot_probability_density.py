@@ -1,4 +1,5 @@
 from pathlib import Path
+import argparse
 import csv
 
 import matplotlib.pyplot as plt
@@ -9,12 +10,19 @@ RESULTS_DIR = ROOT_DIR / "results"
 PLOTS_DIR = RESULTS_DIR / "plots"
 
 SPLITS = ["20", "1000"]
-DATASETS = [
-    ("CelebDF", "threshold_sweep_xception_celebdf.csv"),
-    ("DFDC", "threshold_sweep_xception_dfdc.csv"),
-    ("FaceForensics", "threshold_sweep_xception_faceforensics.csv"),
-    ("Combined", "threshold_sweep_xception_combined.csv"),
-]
+DATASET_SLUGS = {
+    "CelebDF": "celebdf",
+    "DFDC": "dfdc",
+    "FaceForensics": "faceforensics",
+    "Combined": "combined",
+}
+# SBI is only evaluated on CelebDF and DFDC, so FF++ and the combined sweep
+# are intentionally left out of its chart list.
+MODEL_DATASETS = {
+    "ucf": ["CelebDF", "DFDC", "FaceForensics", "Combined"],
+    "xception": ["CelebDF", "DFDC", "FaceForensics", "Combined"],
+    "sbi": ["CelebDF", "DFDC"],
+}
 
 
 def read_threshold_sweep(csv_path):
@@ -44,6 +52,11 @@ def read_threshold_sweep(csv_path):
     return thresholds, fars, frrs
 
 
+def sweep_csv_path(split_name, model_name, dataset_name):
+    filename = f"threshold_sweep_{model_name}_{DATASET_SLUGS[dataset_name]}.csv"
+    return RESULTS_DIR / split_name / model_name / filename
+
+
 def setup_axes(title):
     plt.figure(figsize=(9, 5.5))
     plt.title(title)
@@ -62,7 +75,7 @@ def save_current_figure(output_path):
     print(f"Wrote {output_path}")
 
 
-def plot_single_chart(dataset_name, split_name, csv_path):
+def plot_single_chart(dataset_name, split_name, model_name, csv_path):
     thresholds, fars, frrs = read_threshold_sweep(csv_path)
 
     setup_axes(f"FAR / FRR Threshold Sweep - {dataset_name} ({split_name} splits)")
@@ -73,81 +86,45 @@ def plot_single_chart(dataset_name, split_name, csv_path):
     output_path = (
         PLOTS_DIR
         / split_name
+        / model_name
         / csv_path.with_suffix(".png").name
     )
     save_current_figure(output_path)
 
 
-def plot_comparison_chart(dataset_name, filename):
-    split_data = {}
-
-    for split_name in SPLITS:
-        csv_path = RESULTS_DIR / split_name / filename
-        if not csv_path.exists():
-            raise FileNotFoundError(f"Input CSV not found: {csv_path}")
-
-        split_data[split_name] = read_threshold_sweep(csv_path)
-
-    setup_axes(f"FAR / FRR Threshold Sweep - {dataset_name}")
-
-    thresholds_20, fars_20, frrs_20 = split_data["20"]
-    thresholds_500, fars_500, frrs_500 = split_data["500"]
-
-    plt.plot(
-        thresholds_20,
-        fars_20,
-        label="FAR 20 splits",
-        linewidth=1.4,
-        linestyle="--",
-        marker="o",
-        markersize=3,
-        color="#ff9896",
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Plot FAR/FRR threshold sweeps from results/<split>/<model>/."
     )
-    plt.plot(
-        thresholds_20,
-        frrs_20,
-        label="FRR 20 splits",
-        linewidth=1.4,
-        linestyle="--",
-        marker="o",
-        markersize=3,
-        color="#aec7e8",
+    parser.add_argument(
+        "--models",
+        nargs="+",
+        choices=sorted(MODEL_DATASETS),
+        default=sorted(MODEL_DATASETS),
+        help="Models to plot (default: all).",
     )
-    plt.plot(
-        thresholds_500,
-        fars_500,
-        label="FAR 500 splits",
-        linewidth=2.2,
-        color="#d62728",
+    parser.add_argument(
+        "--splits",
+        nargs="+",
+        choices=SPLITS,
+        default=SPLITS,
+        help="Threshold-grid sizes to plot (default: all).",
     )
-    plt.plot(
-        thresholds_500,
-        frrs_500,
-        label="FRR 500 splits",
-        linewidth=2.2,
-        color="#1f77b4",
-    )
-    plt.legend()
-
-    output_path = (
-        PLOTS_DIR
-        / "comparison"
-        / filename.replace(".csv", "_comparison.png")
-    )
-    save_current_figure(output_path)
+    return parser.parse_args()
 
 
 def main():
-    for split_name in SPLITS:
-        for dataset_name, filename in DATASETS:
-            csv_path = RESULTS_DIR / split_name / filename
-            if not csv_path.exists():
-                raise FileNotFoundError(f"Input CSV not found: {csv_path}")
+    args = parse_args()
 
-            plot_single_chart(dataset_name, split_name, csv_path)
+    for split_name in args.splits:
+        for model_name in args.models:
+            for dataset_name in MODEL_DATASETS[model_name]:
+                csv_path = sweep_csv_path(split_name, model_name, dataset_name)
+                if not csv_path.exists():
+                    print(f"Skipping missing sweep: {csv_path}")
+                    continue
 
-    for dataset_name, filename in DATASETS:
-        plot_comparison_chart(dataset_name, filename)
+                plot_single_chart(dataset_name, split_name, model_name, csv_path)
 
 
 if __name__ == "__main__":
